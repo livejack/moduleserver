@@ -1,0 +1,19 @@
+{
+  "name": "@livejack/moduleserver",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/livejack/moduleserver.git"
+  },
+  "author": "Jérémy Lal <kapouer@melix.org>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/livejack/moduleserver/issues"
+  },
+  "homepage": "https://github.com/livejack/moduleserver#readme"
+}
