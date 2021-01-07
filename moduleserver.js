@@ -94,23 +94,30 @@ class ModuleServer {
 	}
 
 	resolveImports(basePath, code) {
-		let patches = [], ast;
+		const patches = [];
+		let ast;
 		try {
 			ast = MyParser.parse(code, { sourceType: "module", ecmaVersion: "latest" });
 		} catch (error) {
 			return { error: error.toString() };
 		}
-		let patchSrc = (node) => {
+		let isModule = false;
+		const patchSrc = (node) => {
+			isModule = true;
 			if (!node.source) return;
 			let orig = (0, eval)(code.slice(node.source.start, node.source.end));
 			let { error, path } = this.resolveModule(pth.dirname(basePath), orig);
 			if (error) return { error };
 			patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
 		};
+
 		walk.simple(ast, {
+			ExportAllDeclaration: () => isModule = true,
+			ExportDefaultDeclaration: () => isModule = true,
 			ExportNamedDeclaration: patchSrc,
 			ImportDeclaration: patchSrc,
 			ImportExpression: node => {
+				isModule = true;
 				if (node.source.type == "Literal") {
 					let { error, path } = this.resolveModule(pth.dirname(basePath), node.source.value);
 					if (!error)
@@ -121,6 +128,18 @@ class ModuleServer {
 			...walk.base,
 			FieldDefinition: () => {}
 		});
+		if (!isModule) {
+			patches.push({
+				from: ast.start,
+				to: ast.start,
+				text: 'const module = {exports: {}};const exports = module.exports;'
+			});
+			patches.push({
+				from: ast.end,
+				to: ast.end,
+				text: `;export default module.exports`
+			});
+		}
 		for (let patch of patches.sort((a, b) => b.from - a.from))
 			code = code.slice(0, patch.from) + patch.text + code.slice(patch.to);
 		return { code };
@@ -154,3 +173,4 @@ function countParentRefs(path) {
 	while (re.exec(path)) count++;
 	return count;
 }
+
