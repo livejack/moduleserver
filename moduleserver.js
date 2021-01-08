@@ -132,12 +132,14 @@ class ModuleServer {
 			patches.push({
 				from: ast.start,
 				to: ast.start,
-				text: 'const module = {exports: {}};const exports = module.exports;'
+				text: 'const module = {exports: {}};const exports = module.exports'
+					+ (code.charAt(ast.start) == ";" ? "" : ";")
 			});
 			patches.push({
 				from: ast.end,
 				to: ast.end,
-				text: `;export default module.exports`
+				text: (code.charAt(ast.end - 1) == ";" ? "" : ";")
+					+ 'export default module.exports'
 			});
 		}
 		for (let patch of patches.sort((a, b) => b.from - a.from))
