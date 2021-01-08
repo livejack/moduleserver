@@ -31,7 +31,7 @@ module.exports = function(mount) {
 			throw new HttpError.Unauthorized(mount + " is only served in development environment");
 		}
 		const extname = path.extname(req.path);
-		if (extname && extname == ".js") {
+		if (extname && /^\.m?js$/.test(extname)) {
 			try {
 				if (!moduleServer.handleRequest(req, res)) res.sendStatus(404);
 			} catch (err) {
