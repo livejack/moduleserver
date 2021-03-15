@@ -14,7 +14,12 @@ module.exports = class Resolver {
 
 		if (!mod) {
 			const modulePath = Path.join(node_path, moduleName);
-			const pkg = JSON.parse(readFileSync(Path.join(modulePath, 'package.json')));
+			let pkg;
+			try {
+				pkg = JSON.parse(readFileSync(Path.join(modulePath, 'package.json')));
+			} catch (ex) {
+				return { url };
+			}
 			const paths = exportedPaths(pkg);
 			const exp = paths["."];
 
