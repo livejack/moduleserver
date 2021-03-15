@@ -120,8 +120,9 @@ class ModuleServer {
 				isModule = true;
 				if (node.source.type == "Literal") {
 					let { error, path } = this.resolveModule(pth.dirname(basePath), node.source.value);
-					if (!error)
+					if (!error) {
 						patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
+					}
 				}
 			}
 		}, {
