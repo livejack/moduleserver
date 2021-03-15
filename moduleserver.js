@@ -124,6 +124,41 @@ class ModuleServer {
 						patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
 					}
 				}
+			},
+			VariableDeclaration: node => {
+				if (!node.declarations) return;
+				let reqs = [];
+				let noreqs = 0;
+				for (let decl of node.declarations) {
+					if (!decl.init || decl.init.type != "CallExpression" || !decl.init.callee || decl.init.callee.name != "require") {
+						noreqs++;
+						continue;
+					}
+					const args = decl.init.arguments[0];
+					if (!args) {
+						continue; // ? anyway we don't wan't to crash on this ?
+					}
+					const { error, path } = this.resolveModule(pth.dirname(basePath), args.value);
+					if (error) return { error };
+					const str = `import ${decl.id.name} from ${JSON.stringify(dash(path))};`;
+					reqs.push(str);
+				}
+				if (reqs.length == 0) return;
+				if (noreqs > 0) {
+					return {
+						error: "moduleserver does not support yet rewriting mixed variable/require declarations"
+					};
+				}
+				patches.push({
+					from: node.start,
+					to: node.end,
+					text: ""
+				});
+				reqs.forEach(req => patches.push({
+					from: node.start,
+					to: node.start,
+					text: req
+				}));
 			}
 		}, {
 			...walk.base,
