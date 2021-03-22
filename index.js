@@ -1,6 +1,6 @@
 const path = require('path');
 const serveStatic = require('serve-static');
-const Resolver = require('./resolver');
+const Resolver = require('resolve-relative-import');
 const ModuleServer = require("./moduleserver");
 
 /* ES Modules path resolution for browsers */

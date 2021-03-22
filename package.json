@@ -21,7 +21,8 @@
     "acorn-class-fields": "^0.3.7",
     "acorn-private-methods": "^0.3.3",
     "acorn-walk": "^8.0.0",
-    "resolve": "^1.19.0"
+    "resolve": "^1.19.0",
+    "resolve-relative-import": "^1.0.0"
   },
   "devDependencies": {
     "@kapouer/eslint-config": "^1.2.1"
