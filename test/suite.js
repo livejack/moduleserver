@@ -1,4 +1,4 @@
-const Assert = require('assert');
+const { strictEqual } = require('assert');
 const express = require('express');
 const got = require('got');
 
@@ -28,7 +28,7 @@ describe("test suite", function () {
 
 	it('should get jquery', async function () {
 		const res = await got(host + '/node_modules/jquery');
-		Assert.strictEqual(
+		strictEqual(
 			res.headers['x-request-url'],
 			"/node_modules/jquery/dist/jquery.js"
 		);
