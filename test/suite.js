@@ -12,7 +12,6 @@ describe("test suite", function () {
 		const app = express();
 
 		app.get('/modules/*', serveModule('/modules', "test/modules"));
-		app.get('/node_modules/*', serveModule('/node_modules'));
 
 		server = app.listen(() => {
 			host = `http://localhost:${server.address().port}`;
@@ -23,26 +22,29 @@ describe("test suite", function () {
 		server.close(done);
 	});
 
-	it('should redirect module to default browser path', async function () {
-		const res = await got(host + '/node_modules/jquery');
+	it('should redirect module with main field', async function () {
+		const res = await got(host + '/modules/redirect-main');
 		assert.strictEqual(
 			res.headers['x-request-url'],
-			"/node_modules/jquery/dist/jquery.js"
+			"/modules/redirect-main/dist/index.js"
 		);
+	});
+
+	it('should redirect module with exports field', async function () {
+		const res = await got(host + '/modules/redirect-exports');
+		assert.strictEqual(
+			res.headers['x-request-url'],
+			"/modules/redirect-exports/src/index.js"
+		);
+	});
+
+	it('should reexport global module', async function () {
+		const res = await got(host + '/modules/reexport/index.js');
+		assert.ok(res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
 	});
 
 	it('should not reexport global module', async function () {
-		const res = await got(host + '/modules/sideeffect/index.js');
+		const res = await got(host + '/modules/noreexport/index.js');
 		assert.ok(!res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
-	});
-
-	it('should reexport module', async function () {
-		const res = await got(host + '/node_modules/bytes/index.js');
-		assert.ok(
-			res.body.startsWith("const module = {exports: {}};const exports = module.exports;")
-		);
-		assert.ok(
-			res.body.endsWith(";export default module.exports")
-		);
 	});
 });
