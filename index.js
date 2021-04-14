@@ -8,8 +8,8 @@ const HttpError = require('http-errors');
 /* uses fields in package.json (exports,module,jsnext:main,main) */
 /* mount is the base path, and it needs a whitelist of modules names */
 
-module.exports = function(prefix) {
-	const node_path = path.join('.', 'node_modules');
+module.exports = function(prefix, node_modules = "node_modules") {
+	const node_path = path.join('.', node_modules);
 	const serveHandler = serveStatic(path.resolve(node_path), {
 		index: false,
 		redirect: false,
