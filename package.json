@@ -25,9 +25,15 @@
     "resolve-relative-import": "^1.0.0"
   },
   "devDependencies": {
-    "@kapouer/eslint-config": "^1.2.1"
+    "@kapouer/eslint-config": "^1.2.1",
+    "express": "^4.17.1",
+    "jquery": "^3.6.0",
+    "mocha": "^8.3.2"
   },
   "eslintConfig": {
-    "extends": "@kapouer/eslint-config"
+    "extends": "@kapouer/eslint-config",
+    "env": {
+      "mocha": true
+    }
   }
 }
