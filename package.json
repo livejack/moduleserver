@@ -36,5 +36,8 @@
     "env": {
       "mocha": true
     }
+  },
+  "mocha": {
+    "spec": "test/*.js"
   }
 }
