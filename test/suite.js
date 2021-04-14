@@ -23,7 +23,11 @@ describe("test suite", function () {
 	});
 
 	it('should redirect module with main field', async function () {
-		const res = await got(host + '/modules/redirect-main');
+		const res = await got(host + '/modules/redirect-main', {
+			headers: {
+				referer: "/mymodule.js"
+			}
+		});
 		assert.strictEqual(
 			res.headers['x-request-url'],
 			"/modules/redirect-main/here/index.js"
@@ -31,7 +35,11 @@ describe("test suite", function () {
 	});
 
 	it('should redirect module with exports field', async function () {
-		const res = await got(host + '/modules/redirect-exports');
+		const res = await got(host + '/modules/redirect-exports', {
+			headers: {
+				referer: "/mymodule.js"
+			}
+		});
 		assert.strictEqual(
 			res.headers['x-request-url'],
 			"/modules/redirect-exports/src/index.js"
@@ -39,12 +47,29 @@ describe("test suite", function () {
 	});
 
 	it('should reexport global module', async function () {
-		const res = await got(host + '/modules/reexport/index.js');
+		const res = await got(host + '/modules/reexport/index.js', {
+			headers: {
+				referer: "/mymodule.js"
+			}
+		});
 		assert.ok(res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
 	});
 
 	it('should not reexport global module', async function () {
-		const res = await got(host + '/modules/noreexport/index.js');
+		const res = await got(host + '/modules/noreexport/index.js', {
+			headers: {
+				referer: "/mymodule.js"
+			}
+		});
+		assert.ok(!res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
+	});
+
+	it('should leave file untouched', async function () {
+		const res = await got(host + '/modules/reexport/index.js', {
+			headers: {
+				referer: "/myfile"
+			}
+		});
 		assert.ok(!res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
 	});
 });
