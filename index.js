@@ -2,6 +2,7 @@ const path = require('path');
 const serveStatic = require('serve-static');
 const Resolver = require('resolve-relative-import');
 const ModuleServer = require("./moduleserver");
+const HttpError = require('http-errors');
 
 /* ES Modules path resolution for browsers */
 /* uses fields in package.json (exports,module,jsnext:main,main) */
