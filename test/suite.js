@@ -10,12 +10,9 @@ describe("test suite", function () {
 
 	before(function (done) {
 		const app = express();
-		app.get('/', (req, res) => {
-			res.send('Hello World!');
-		});
 
+		app.get('/modules/*', serveModule('/modules', "test/modules"));
 		app.get('/node_modules/*', serveModule('/node_modules'));
-		app.use(express.static('public', { extensions: ['html', 'js', 'css', 'js.map'] }));
 
 		server = app.listen(() => {
 			host = `http://localhost:${server.address().port}`;
@@ -32,6 +29,11 @@ describe("test suite", function () {
 			res.headers['x-request-url'],
 			"/node_modules/jquery/dist/jquery.js"
 		);
+	});
+
+	it('should not reexport global module', async function () {
+		const res = await got(host + '/modules/sideeffect/index.js');
+		assert.ok(!res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
 	});
 
 	it('should reexport module', async function () {
