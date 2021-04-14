@@ -1,4 +1,4 @@
-const pth = require("path");
+const Path = require("path");
 const fs = require("fs");
 const resolve = require("resolve");
 const crypto = require("crypto");
@@ -31,7 +31,7 @@ class ModuleServer {
 		this.handleRequest = this.handleRequest.bind(this);
 	}
 
-	handleRequest(req, resp) {
+	handleRequest(req, res) {
 		let url = new URL(req.url, "http://localhost");
 		let handle = this.prefixTest.exec(url.pathname);
 		if (!handle) return false;
@@ -43,8 +43,8 @@ class ModuleServer {
 			};
 			if (!headers || typeof headers == "string") hds["content-type"] = headers || "text/plain";
 			else Object.assign(hds, headers);
-			resp.writeHead(status, hds);
-			resp.end(text);
+			res.writeHead(status, hds);
+			res.end(text);
 		};
 
 		// Modules paths in URLs represent "up one directory" as "__".
@@ -52,10 +52,18 @@ class ModuleServer {
 		let path = undash(handle[1]);
 		let cached = this.cache[path];
 		if (!cached) {
-			if (countParentRefs(path) > this.maxDepth) { send(403, "Access denied"); return true; }
-			let fullPath = unwin(pth.resolve(this.root, path)), code;
-			try { code = fs.readFileSync(fullPath, "utf8"); }
-			catch { send(404, "Not found"); return true; }
+			if (countParentRefs(path) > this.maxDepth) {
+				send(403, "Access denied");
+				return true;
+			}
+			let fullPath = unwin(Path.resolve(this.root, path));
+			let code;
+			try {
+				code = fs.readFileSync(fullPath, "utf8");
+			} catch {
+				send(404, "Not found");
+				return true;
+			}
 			if (/\.map$/.test(fullPath)) {
 				cached = this.cache[path] = new Cached(code, "application/json");
 			} else {
@@ -90,7 +98,7 @@ class ModuleServer {
 			catch (e) { return { error: e.toString() }; }
 		}
 
-		return { path: "/" + this.prefix + "/" + unwin(pth.relative(this.root, resolved)) };
+		return { path: "/" + this.prefix + "/" + unwin(Path.relative(this.root, resolved)) };
 	}
 
 	resolveImports(basePath, code) {
@@ -108,7 +116,7 @@ class ModuleServer {
 			isModule = true;
 			if (!node.source) return;
 			let orig = (0, eval)(code.slice(node.source.start, node.source.end));
-			let { error, path } = this.resolveModule(pth.dirname(basePath), orig);
+			let { error, path } = this.resolveModule(Path.dirname(basePath), orig);
 			if (error) return { error };
 			patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
 		};
@@ -121,7 +129,7 @@ class ModuleServer {
 			ImportExpression: node => {
 				isModule = true;
 				if (node.source.type == "Literal") {
-					let { error, path } = this.resolveModule(pth.dirname(basePath), node.source.value);
+					let { error, path } = this.resolveModule(Path.dirname(basePath), node.source.value);
 					if (!error) {
 						patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
 					}
@@ -146,7 +154,7 @@ class ModuleServer {
 					if (!args) {
 						continue; // ? anyway we don't wan't to crash on this ?
 					}
-					const { error, path } = this.resolveModule(pth.dirname(basePath), args.value);
+					const { error, path } = this.resolveModule(Path.dirname(basePath), args.value);
 					if (error) return { error };
 					const str = `import ${decl.id.name} from ${JSON.stringify(dash(path))};`;
 					reqs.push(str);
@@ -170,7 +178,7 @@ class ModuleServer {
 			}
 		}, {
 			...walk.base,
-			FieldDefinition: () => {}
+			FieldDefinition: () => { }
 		});
 		if (!isModule && isCommonjs) {
 			patches.push({
@@ -196,7 +204,7 @@ module.exports = ModuleServer;
 function dash(path) { return path.replace(/(^|\/)\.\.(?=$|\/)/g, "$1__"); }
 function undash(path) { return path.replace(/(^|\/)__(?=$|\/)/g, "$1.."); }
 
-const unwin = pth.sep == "\\" ? s => s.replace(/\\/g, "/") : s => s;
+const unwin = Path.sep == "\\" ? s => s.replace(/\\/g, "/") : s => s;
 
 function packageFilter(pkg) {
 	if (pkg.module) pkg.main = pkg.module;
