@@ -24,24 +24,26 @@ describe("test suite", function () {
 
 	it('should redirect module with main field', async function () {
 		const res = await got(host + '/modules/redirect-main', {
+			followRedirect: false,
 			headers: {
 				referer: "/mymodule.js"
 			}
 		});
 		assert.strictEqual(
-			res.headers['x-request-url'],
+			res.headers.location,
 			"/modules/redirect-main/here/index.js"
 		);
 	});
 
 	it('should redirect module with exports field', async function () {
 		const res = await got(host + '/modules/redirect-exports', {
+			followRedirect: false,
 			headers: {
 				referer: "/mymodule.js"
 			}
 		});
 		assert.strictEqual(
-			res.headers['x-request-url'],
+			res.headers.location,
 			"/modules/redirect-exports/src/index.js"
 		);
 	});
