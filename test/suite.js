@@ -26,7 +26,7 @@ describe("test suite", function () {
 		const res = await got(host + '/modules/redirect-main');
 		assert.strictEqual(
 			res.headers['x-request-url'],
-			"/modules/redirect-main/dist/index.js"
+			"/modules/redirect-main/here/index.js"
 		);
 	});
 
