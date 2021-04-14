@@ -1,4 +1,4 @@
-const { strictEqual } = require('assert');
+const assert = require('assert');
 const express = require('express');
 const got = require('got');
 
@@ -22,15 +22,25 @@ describe("test suite", function () {
 			done();
 		});
 	});
-	after(function () {
-		server.close();
+	after(function (done) {
+		server.close(done);
 	});
 
-	it('should get jquery', async function () {
+	it('should redirect module to default browser path', async function () {
 		const res = await got(host + '/node_modules/jquery');
-		strictEqual(
+		assert.strictEqual(
 			res.headers['x-request-url'],
 			"/node_modules/jquery/dist/jquery.js"
+		);
+	});
+
+	it('should reexport module', async function () {
+		const res = await got(host + '/node_modules/bytes/index.js');
+		assert.ok(
+			res.body.startsWith("const module = {exports: {}};const exports = module.exports;")
+		);
+		assert.ok(
+			res.body.endsWith(";export default module.exports")
 		);
 	});
 });
