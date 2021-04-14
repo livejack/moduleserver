@@ -31,8 +31,9 @@ module.exports = function(prefix, node_modules = "node_modules") {
 		if (req.app.settings.env != "development") {
 			throw new HttpError.Unauthorized(prefix + " is only served in development environment");
 		}
-		const extname = path.extname(req.path);
-		if (extname && /^\.m?js$/.test(extname)) {
+		const ext = path.extname(req.path);
+		const ref = req.headers['referer'] || "";
+		if (ext && /^\.m?js$/.test(ext) && /\.m?js$/.test(ref)) {
 			try {
 				if (!moduleServer.handleRequest(req, res)) res.sendStatus(404);
 			} catch (err) {
