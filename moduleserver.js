@@ -69,6 +69,7 @@ class ModuleServer {
 				watching.close();
 				this.cache[path] = null;
 			});
+			watching.unref();
 		}
 		let noneMatch = req.headers["if-none-match"];
 		if (noneMatch && noneMatch.indexOf(cached.headers.etag) > -1) { send(304, null); return true; }
