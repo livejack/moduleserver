@@ -1,7 +1,6 @@
 const pth = require("path");
 const fs = require("fs");
 const resolve = require("resolve");
-const { parse: parseURL } = require("url");
 const crypto = require("crypto");
 const { Parser } = require("acorn");
 const MyParser = Parser
@@ -33,7 +32,7 @@ class ModuleServer {
 	}
 
 	handleRequest(req, resp) {
-		let url = parseURL(req.url);
+		let url = new URL(req.url, "http://localhost");
 		let handle = this.prefixTest.exec(url.pathname);
 		if (!handle) return false;
 
