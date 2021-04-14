@@ -102,6 +102,8 @@ class ModuleServer {
 			return { error: error.toString() };
 		}
 		let isModule = false;
+		let isCommonjs = false;
+
 		const patchSrc = (node) => {
 			isModule = true;
 			if (!node.source) return;
@@ -123,6 +125,12 @@ class ModuleServer {
 					if (!error) {
 						patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
 					}
+				}
+			},
+			AssignmentExpression: node => {
+				const names = getAssignmentNames(node.left);
+				if (names[0] == "module" && names[1] == "exports" || names[0] == "exports") {
+					isCommonjs = true;
 				}
 			},
 			VariableDeclaration: node => {
@@ -164,7 +172,7 @@ class ModuleServer {
 			...walk.base,
 			FieldDefinition: () => {}
 		});
-		if (!isModule) {
+		if (!isModule && isCommonjs) {
 			patches.push({
 				from: ast.start,
 				to: ast.start,
@@ -212,3 +220,14 @@ function countParentRefs(path) {
 	return count;
 }
 
+function getAssignmentNames(left, names = []) {
+	if (left.type == "Identifier") {
+		names.push(left.name);
+	} else if (left.type == "MemberExpression") {
+		getAssignmentNames(left.object, names);
+		if (left.property && left.property.type == "Identifier" && left.property.name) {
+			names.push(left.property.name);
+		}
+	}
+	return names;
+}
