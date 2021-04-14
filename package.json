@@ -23,7 +23,7 @@
     "acorn-walk": "^8.0.0",
     "http-errors": "^1.7.2",
     "resolve": "^1.19.0",
-    "resolve-relative-import": "^1.0.0"
+    "resolve-relative-import": "^1.0.1"
   },
   "devDependencies": {
     "@kapouer/eslint-config": "^1.2.1",
