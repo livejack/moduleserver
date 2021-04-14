@@ -72,4 +72,13 @@ describe("test suite", function () {
 		});
 		assert.ok(!res.body.startsWith("const module = {exports: {}};const exports = module.exports;"));
 	});
+
+	it('should redirect in subdir without loop', async function () {
+		const res = await got(host + '/modules/redirect-loop', {
+			headers: {
+				referer: "/myfile"
+			}
+		});
+		assert.ok(res.body.includes("default toto"));
+	});
 });
