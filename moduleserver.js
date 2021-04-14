@@ -37,12 +37,12 @@ class ModuleServer {
 		if (!handle) return false;
 
 		let send = (status, text, headers) => {
-			let hds = {
-				"access-control-allow-origin": "*",
-				"x-request-url": req.url
-			};
-			if (!headers || typeof headers == "string") hds["content-type"] = headers || "text/plain";
-			else Object.assign(hds, headers);
+			let hds = {};
+			if (!headers || typeof headers == "string") {
+				hds["content-type"] = headers || "text/plain";
+			} else {
+				Object.assign(hds, headers);
+			}
 			res.writeHead(status, hds);
 			res.end(text);
 		};
@@ -79,7 +79,10 @@ class ModuleServer {
 			watching.unref();
 		}
 		let noneMatch = req.headers["if-none-match"];
-		if (noneMatch && noneMatch.indexOf(cached.headers.etag) > -1) { send(304, null); return true; }
+		if (noneMatch && noneMatch.indexOf(cached.headers.etag) > -1) {
+			send(304, null);
+			return true;
+		}
 		send(200, cached.content, cached.headers);
 		return true;
 	}
@@ -118,7 +121,11 @@ class ModuleServer {
 			let orig = (0, eval)(code.slice(node.source.start, node.source.end));
 			let { error, path } = this.resolveModule(Path.dirname(basePath), orig);
 			if (error) return { error };
-			patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
+			patches.push({
+				from: node.source.start,
+				to: node.source.end,
+				text: JSON.stringify(dash(path))
+			});
 		};
 
 		walk.simple(ast, {
@@ -129,9 +136,15 @@ class ModuleServer {
 			ImportExpression: node => {
 				isModule = true;
 				if (node.source.type == "Literal") {
-					let { error, path } = this.resolveModule(Path.dirname(basePath), node.source.value);
+					let { error, path } = this.resolveModule(
+						Path.dirname(basePath), node.source.value
+					);
 					if (!error) {
-						patches.push({ from: node.source.start, to: node.source.end, text: JSON.stringify(dash(path)) });
+						patches.push({
+							from: node.source.start,
+							to: node.source.end,
+							text: JSON.stringify(dash(path))
+						});
 					}
 				}
 			},
@@ -154,7 +167,10 @@ class ModuleServer {
 					if (!args) {
 						continue; // ? anyway we don't wan't to crash on this ?
 					}
-					const { error, path } = this.resolveModule(Path.dirname(basePath), args.value);
+					const { error, path } = this.resolveModule(
+						Path.dirname(basePath),
+						args.value
+					);
 					if (error) return { error };
 					const str = `import ${decl.id.name} from ${JSON.stringify(dash(path))};`;
 					reqs.push(str);
@@ -194,8 +210,9 @@ class ModuleServer {
 					+ 'export default module.exports'
 			});
 		}
-		for (let patch of patches.sort((a, b) => b.from - a.from))
+		for (let patch of patches.sort((a, b) => b.from - a.from)) {
 			code = code.slice(0, patch.from) + patch.text + code.slice(patch.to);
+		}
 		return { code };
 	}
 }
